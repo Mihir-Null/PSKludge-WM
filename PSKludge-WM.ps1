@@ -2,7 +2,7 @@
 PSKludge-WM.ps1
 
 FancyZones-free PowerShell tiling manager.
-Uses direct Win32 SetWindowPos — no FancyZones, no synthetic keypresses.
+Uses direct Win32 SetWindowPos -- no FancyZones, no synthetic keypresses.
 
 USAGE
   Move focused window:
@@ -26,10 +26,10 @@ LAYOUT  master-stack
   Zone 1+   right column, subdivided top-to-bottom (stack)
 
 DIRECTION mapping for -Action move
-  H / left    any stack item → master;         master → no-op
-  L / right   master → top of stack (zone 1);  stack item → no-op
-  J / down    master → bottom of stack;         stack item → next slot (no wrap)
-  K / up      master → top of stack;            stack item → prev slot, wraps to master at zone 1
+  H / left    any stack item -> master;         master -> no-op
+  L / right   master -> top of stack (zone 1);  stack item -> no-op
+  J / down    master -> bottom of stack;         stack item -> next slot (no wrap)
+  K / up      master -> top of stack;            stack item -> prev slot, wraps to master at zone 1
 #>
 
 param(
@@ -130,7 +130,7 @@ public class Win32Tiler {
 
     // Warps the hardware cursor to an absolute screen position.
     // Used after SetForegroundWindow to land the cursor at the center of
-    // the newly focused window — mirrors Hyprland's cursor-warp-on-focus behavior.
+    // the newly focused window -- mirrors Hyprland's cursor-warp-on-focus behavior.
     [DllImport("user32.dll")]
     public static extern bool SetCursorPos(int X, int Y);
 
@@ -417,20 +417,20 @@ function Get-DirectionalTarget([int]$current, [string]$dir, [int]$zoneCount) {
 
     switch ($dir) {
         "left" {
-            if (-not $isMaster) { return 0 }           # any stack item → master
+            if (-not $isMaster) { return 0 }           # any stack item -> master
             return $current                             # already master, no-op
         }
         "right" {
-            if ($isMaster -and $zoneCount -gt 1) { return 1 }  # master → top of stack
+            if ($isMaster -and $zoneCount -gt 1) { return 1 }  # master -> top of stack
             return $current                             # already in stack (rightmost column), no-op
         }
         "down" {
-            if ($isMaster -and $zoneCount -gt 1)      { return $zoneCount - 1 }   # master → bottom of stack
+            if ($isMaster -and $zoneCount -gt 1)      { return $zoneCount - 1 }   # master -> bottom of stack
             if (-not $isMaster -and $current -lt $zoneCount - 1) { return $current + 1 }  # next slot
             return $current                             # already at bottom, no-op
         }
         "up" {
-            if ($isMaster -and $zoneCount -gt 1)      { return 1 }                # master → top of stack
+            if ($isMaster -and $zoneCount -gt 1)      { return 1 }                # master -> top of stack
             if (-not $isMaster)                        { return [Math]::Max(0, $current - 1) }  # prev slot, or master at zone 1
             return $current
         }
@@ -715,7 +715,7 @@ public class ShellWatcher {
     # Snapshot eligible window count at startup.
     $lastWindowCount = 0
     try { $lastWindowCount = (Get-EligibleWindowsOnActiveMonitor).Windows.Count }
-    catch { Write-DebugLog "daemon: initial count failed — $($_.Exception.Message)" }
+    catch { Write-DebugLog "daemon: initial count failed -- $($_.Exception.Message)" }
 
     $lastSeen      = [ShellWatcher]::ChangeCount
     $pendingRetile = $false
@@ -745,14 +745,14 @@ public class ShellWatcher {
                     try {
                         $nowCount = (Get-EligibleWindowsOnActiveMonitor).Windows.Count
                         if ($nowCount -ne $lastWindowCount) {
-                            Write-DebugLog "daemon: count $lastWindowCount → $nowCount, retiling"
+                            Write-DebugLog "daemon: count $lastWindowCount -> $nowCount, retiling"
                             $lastWindowCount = $nowCount
                             Invoke-Retile "master-stack"
                         } else {
                             Write-DebugLog "daemon: events fired but eligible count unchanged ($nowCount), skipping"
                         }
                     } catch {
-                        Write-DebugLog "daemon: retile skipped — $($_.Exception.Message)"
+                        Write-DebugLog "daemon: retile skipped -- $($_.Exception.Message)"
                     }
                 }
             }
@@ -777,7 +777,7 @@ function Invoke-StopDaemon {
         Stop-Process -Id $daemonPid -Force -ErrorAction Stop
         Write-Host "Daemon (PID $daemonPid) stopped."
     } catch {
-        Write-Host "Could not stop PID $daemonPid — $($_.Exception.Message)"
+        Write-Host "Could not stop PID $daemonPid -- $($_.Exception.Message)"
     } finally {
         # Always clean up the PID file, even if the process was already dead.
         Remove-Item $PidFile -Force -ErrorAction SilentlyContinue
