@@ -212,9 +212,9 @@ function Get-WindowClass([IntPtr]$hwnd) {
 }
 
 function Get-WindowPid([IntPtr]$hwnd) {
-    [uint32]$pid = 0
-    [void][Win32Tiler]::GetWindowThreadProcessId($hwnd, [ref]$pid)
-    return [int64]$pid
+    [uint32]$wPid = 0
+    [void][Win32Tiler]::GetWindowThreadProcessId($hwnd, [ref]$wPid)
+    return [int64]$wPid
 }
 
 function Get-Rect([IntPtr]$hwnd) {
@@ -288,8 +288,8 @@ function Test-EligibleWindow([IntPtr]$hwnd, [IntPtr]$targetMonitor, [hashtable]$
     $class = Get-WindowClass $hwnd
     if ($ExcludedClasses -contains $class) { return $false }
 
-    $pid  = Get-WindowPid $hwnd
-    $proc = if ($procTable.ContainsKey($pid)) { $procTable[$pid] } else { "" }
+    $wPid = Get-WindowPid $hwnd
+    $proc = if ($procTable.ContainsKey($wPid)) { $procTable[$wPid] } else { "" }
     foreach ($ex in $ExcludedProcessNames) { if ($proc -like "$ex*") { return $false } }
 
     $rect = Get-Rect $hwnd
@@ -319,12 +319,12 @@ function Get-EligibleWindowsOnActiveMonitor {
     $callback = {
         param([IntPtr]$hwnd, [IntPtr]$lParam)
         if (Test-EligibleWindow $hwnd $targetMonitor $procTable) {
-            $pid = Get-WindowPid $hwnd
+            $wPid = Get-WindowPid $hwnd
             [void]$windows.Add([PSCustomObject]@{
                 Hwnd     = $hwnd
                 HwndInt  = $hwnd.ToInt64()
                 Title    = Get-WindowTitle $hwnd
-                Process  = if ($procTable.ContainsKey($pid)) { $procTable[$pid] } else { "" }
+                Process  = if ($procTable.ContainsKey($wPid)) { $procTable[$wPid] } else { "" }
                 Rect     = Get-Rect $hwnd
                 IsActive = ($hwnd -eq $foreground)
             })
